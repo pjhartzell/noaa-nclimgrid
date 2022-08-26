@@ -1,5 +1,7 @@
 from tempfile import TemporaryDirectory
 
+import planetary_computer as pc
+
 from stactools.noaa_nclimgrid import stac
 from stactools.noaa_nclimgrid.constants import Frequency, Variable
 from tests import test_data
@@ -14,13 +16,16 @@ def test_create_monthly_items_local() -> None:
             item.validate()
 
 
-# def test_create_monthly_items_remote() -> None:
-#     nc_href = "https://ai4epublictestdata.blob.core.windows.net/stactools/nclimgrid/monthly/nclimgrid_prcp.nc"  # noqa
-#     with TemporaryDirectory() as cog_dir:
-#         items = stac.create_items(nc_href, cog_dir)
-#         assert len(items) == 2
-#         for item in items:
-#             item.validate()
+def test_create_monthly_items_remote() -> None:
+    nc_href = "https://nclimgridwesteurope.blob.core.windows.net/nclimgrid/nclimgrid-monthly/nclimgrid_prcp.nc"  # noqa
+    read_nc_href = pc.sign(nc_href)
+    month_range = ("189501", "189501")
+    with TemporaryDirectory() as cog_dir:
+        items, cogs = stac.create_items(read_nc_href, cog_dir, month_range=month_range)
+        assert len(items) == 1
+        for item in items:
+            item.validate()
+        assert len(cogs) == 4
 
 
 def test_create_monthly_items_with_netcdf_assets() -> None:
@@ -44,13 +49,16 @@ def test_create_daily_items_local() -> None:
             item.validate()
 
 
-# def test_create_daily_items_remote() -> None:
-#     nc_href = "https://ai4epublictestdata.blob.core.windows.net/stactools/nclimgrid/daily/prcp-202201-grd-prelim.nc"  # noqa
-#     with TemporaryDirectory() as cog_dir:
-#         items = stac.create_items(nc_href, cog_dir)
-#         assert len(items) == 1
-#         for item in items:
-#             item.validate()
+def test_create_daily_items_remote() -> None:
+    nc_href = "https://nclimgridwesteurope.blob.core.windows.net/nclimgrid/nclimgrid-daily/beta/by-month/1951/01/ncdd-195101-grd-scaled.nc"  # noqa
+    read_nc_href = pc.sign(nc_href)
+    day_range = (1, 1)
+    with TemporaryDirectory() as cog_dir:
+        items, cogs = stac.create_items(read_nc_href, cog_dir, day_range=day_range)
+        assert len(items) == 1
+        for item in items:
+            item.validate()
+        assert len(cogs) == 4
 
 
 def test_create_daily_items_with_netcdf_assets() -> None:
